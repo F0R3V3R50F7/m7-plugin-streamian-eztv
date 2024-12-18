@@ -17,24 +17,32 @@ function getNextEZTVMirror() {
     return mirror;
 }
 
-// Function to attempt an HTTP request with retries
-function safeHttpRequest(url) {
+// Function to make an HTTP request with retries
+function makeHttpRequestWithRetries(url) {
     var retries = 0;
-    while (retries < 3) {
-        var mirror = getNextEZTVMirror();
-        console.log(`EZTV | Attempting request to: ${mirror}${url}`);
+    var maxRetries = 3;
+    var response = null;
+
+    while (retries < maxRetries) {
         try {
-            var response = http.request(mirror + url);
+            response = http.request(url);
             if (response) {
-                console.log(`EZTV | Request successful: ${mirror}${url}`);
                 return response;
             }
         } catch (err) {
-            console.log(`EZTV | Request failed for mirror: ${mirror}`);
+            console.log(`EZTV | Request failed on attempt ${retries + 1}: ${err.message}`);
         }
+
         retries++;
+        // Switch to the next mirror on failure
+        if (retries < maxRetries) {
+            var nextMirror = getNextEZTVMirror();
+            console.log(`EZTV | Retrying with mirror: ${nextMirror}`);
+        }
     }
-    console.error("EZTV | All mirrors failed after 3 attempts.");
+
+    // If all attempts failed, log an error
+    console.log("EZTV | All request attempts failed. Returning empty result.");
     return null;
 }
 
@@ -54,15 +62,16 @@ if (relevantTitlePartMatch) {
     return [];
 }
 
-// Use safeHttpRequest for search URL
-var searchUrl = "/search/" + encodeURIComponent(title);
-var httpResponse = safeHttpRequest(searchUrl);
+// Use the current mirror for the search URL
+var searchUrl = getNextEZTVMirror() + "/search/" + encodeURIComponent(title);
+var results = [];
+var httpResponse = makeHttpRequestWithRetries(searchUrl);
+
 if (!httpResponse) {
     page.loading = false;
     return [];
 }
 
-var results = [];
 try {
     var searchPage = html.parse(httpResponse);
     var tbodyElement = searchPage.root.getElementByTagName('tbody')[4];
@@ -89,10 +98,10 @@ try {
             var torrentPageLink = linkElement.attributes.getNamedItem('href').value;
             if (!torrentPageLink) continue;
 
-            // Fetch torrent page using safeHttpRequest
-            var torrentPageResponse = safeHttpRequest(torrentPageLink);
+            // Fetch torrent page using the same mirror as the search
+            var torrentPageResponse = makeHttpRequestWithRetries(getNextEZTVMirror() + torrentPageLink);
             if (!torrentPageResponse) continue;
-            
+
             var htmlString = torrentPageResponse.toString();
             var magnetLinkMatch = htmlString.match(/href="(magnet:[^"]+)"/);
             if (!magnetLinkMatch || !magnetLinkMatch[1]) continue;
@@ -114,7 +123,7 @@ try {
     page.loading = false;
     return results;
 } catch (err) {
-    console.log("EZTV | Error: " + err.message);
+    console.log("EZTV | Error parsing search page: " + err.message);
     page.loading = false;
     return [];
 }
