@@ -3,7 +3,7 @@ var eztvMirrors = [
     "https://eztvx.to",
     "https://eztv1.xyz",
     "https://eztv.wf",
-    "https://eztf.tf",
+    "https://eztv.tf",
     "https://eztv.yt"
 ];
 
