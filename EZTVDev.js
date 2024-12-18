@@ -30,14 +30,14 @@ function makeHttpRequestWithRetries(url) {
                 return response;
             }
         } catch (err) {
-            console.log(`EZTV | Request failed on attempt ${retries + 1}: ${err.message}`);
+            console.log("EZTV | Request failed on attempt " + (retries + 1) + ": " + err);
         }
 
         retries++;
         // Switch to the next mirror on failure
         if (retries < maxRetries) {
             var nextMirror = getNextEZTVMirror();
-            console.log(`EZTV | Retrying with mirror: ${nextMirror}`);
+            console.log("EZTV | Retrying with mirror: " + nextMirror);
         }
     }
 
@@ -56,9 +56,9 @@ if (relevantTitlePartMatch) {
         .trim()
         .toLowerCase();
 
-    console.log('EZTV | Relevant title part: ' + relevantTitlePart);
+    console.log("EZTV | Relevant title part: " + relevantTitlePart);
 } else {
-    console.log('EZTV | Movie detected, skipping...');
+    console.log("EZTV | Movie detected, skipping...");
     return [];
 }
 
@@ -74,28 +74,28 @@ if (!httpResponse) {
 
 try {
     var searchPage = html.parse(httpResponse);
-    var tbodyElement = searchPage.root.getElementByTagName('tbody')[4];
+    var tbodyElement = searchPage.root.getElementByTagName("tbody")[4];
     if (!tbodyElement) return [];
-    var torrents = tbodyElement.getElementByTagName('tr');
+    var torrents = tbodyElement.getElementByTagName("tr");
     if (torrents.length === 0) return [];
     for (var i = 2; i < torrents.length; i++) {
         var torrent = torrents[i];
         try {
             if (!torrent) continue;
-            var titleElements = torrent.getElementByTagName('td');
+            var titleElements = torrent.getElementByTagName("td");
             var titleElement = titleElements[1];
             if (service.H265Filter && /[xXhH]265/i.test(titleElement.textContent)) continue;
             if (!titleElement) continue;
-            var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, ' ').replace(/[\-:]/g, '');
+            var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, " ").replace(/[\-:]/g, "");
             if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
 
             var seederElement = titleElements[titleElements.length - 1];
             if (!seederElement) continue;
-            var seederCount = parseInt(seederElement.textContent.trim().replace(',', ''));
+            var seederCount = parseInt(seederElement.textContent.trim().replace(",", ""));
             if (seederCount === 0) continue;
 
-            var linkElement = titleElement.getElementByTagName('a')[0];
-            var torrentPageLink = linkElement.attributes.getNamedItem('href').value;
+            var linkElement = titleElement.getElementByTagName("a")[0];
+            var torrentPageLink = linkElement.attributes.getNamedItem("href").value;
             if (!torrentPageLink) continue;
 
             // Fetch torrent page using the same mirror as the search
@@ -116,14 +116,14 @@ try {
             var item = magnetLink + " - " + quality + " - " + seederCount;
             results.push(item);
         } catch (error) {
-            console.log("EZTV | Error processing torrent: " + error.message);
+            console.log("EZTV | Error processing torrent: " + error);
             continue;
         }
     }
     page.loading = false;
     return results;
 } catch (err) {
-    console.log("EZTV | Error parsing search page: " + err.message);
+    console.log("EZTV | Error parsing search page: " + err);
     page.loading = false;
     return [];
 }
