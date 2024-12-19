@@ -114,7 +114,7 @@ try {
             if (/XviD/i.test(titleElement.textContent)) quality = "480p";
             if (!quality) continue;*/
 
-            var item = magnetLink + " - " + quality || 'Unknown' + " - " + seederCount + " - " + codec;
+            var item = magnetLink + " - " + quality || 'Unknown' + " - " + seederCount + " - " + codec || 'Unknown';
             results.push(item);
         } catch (error) {
             console.log("EZTV | Error processing torrent: " + error);
