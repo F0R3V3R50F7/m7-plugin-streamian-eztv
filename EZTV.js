@@ -84,7 +84,8 @@ try {
             if (!torrent) continue;
             var titleElements = torrent.getElementByTagName("td");
             var titleElement = titleElements[1];
-            if (service.H265Filter && /[xXhH]265/i.test(titleElement.textContent)) continue;
+            if (/[xXhH]265/i.test(titleElement.textContent)) {var codec = "H265";} else {var codec = "Unknown";};
+
             if (!titleElement) continue;
             var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, " ").replace(/[\-:]/g, "");
             if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
@@ -107,13 +108,13 @@ try {
             if (!magnetLinkMatch || !magnetLinkMatch[1]) continue;
             var magnetLink = magnetLinkMatch[1];
 
-            var quality = "Unknown";
+            /* var quality = "Unknown";
             if (/1080p/i.test(titleElement.textContent)) quality = "1080p";
             if (/720p/i.test(titleElement.textContent)) quality = "720p";
             if (/XviD/i.test(titleElement.textContent)) quality = "480p";
-            if (!quality) continue;
+            if (!quality) continue;*/
 
-            var item = magnetLink + " - " + quality + " - " + seederCount;
+            var item = magnetLink + " - " + 'Unknown' + " - " + seederCount + " - " + codec || 'Unknown';
             results.push(item);
         } catch (error) {
             console.log("EZTV | Error processing torrent: " + error);
