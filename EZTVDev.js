@@ -47,7 +47,6 @@ function makeHttpRequestWithRetries(url) {
 }
 
 // Main script
-page.loading = true;
 
 var relevantTitlePartMatch = title.match(/\s(S\d{2}E\d{2})/i);
 
@@ -84,10 +83,18 @@ try {
             if (!torrent) continue;
             var titleElements = torrent.getElementByTagName("td");
             var titleElement = titleElements[1];
-            if (/[xXhH]265/i.test(titleElement.textContent)) {var codec = "H265";} else {var codec = "Unknown";};
+            if (/[xXhH]265/i.test(titleElement.textContent)) {
+                var codec = "H265";
+            } else {
+                var codec = "Unknown";
+            }
 
             if (!titleElement) continue;
-            var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, " ").replace(/[\-:]/g, "");
+            var titleForCheck = titleElement.textContent
+                .trim()
+                .toLowerCase()
+                .replace(/\./g, " ")
+                .replace(/[\-:]/g, "");
             if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
 
             var seederElement = titleElements[titleElements.length - 1];
@@ -108,23 +115,15 @@ try {
             if (!magnetLinkMatch || !magnetLinkMatch[1]) continue;
             var magnetLink = magnetLinkMatch[1];
 
-            /* var quality = "Unknown";
-            if (/1080p/i.test(titleElement.textContent)) quality = "1080p";
-            if (/720p/i.test(titleElement.textContent)) quality = "720p";
-            if (/XviD/i.test(titleElement.textContent)) quality = "480p";
-            if (!quality) continue;*/
-
-            var item = magnetLink + " - " + 'Unknown' + " - " + seederCount + " - " + codec || 'Unknown';
+            var item = magnetLink + " - " + "Unknown" + " - " + seederCount + " - " + codec;
             results.push(item);
         } catch (error) {
             console.log("EZTV | Error processing torrent: " + error);
             continue;
         }
     }
-    page.loading = false;
     return results;
 } catch (err) {
     console.log("EZTV | Error parsing search page: " + err);
-    page.loading = false;
     return [];
 }
